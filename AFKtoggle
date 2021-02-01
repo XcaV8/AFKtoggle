@@ -1,0 +1,118 @@
+	
+#!/bin/bash
+
+# +++ AFK fishing - Minecraft +++ (Right Mouse Button) V-1.2
+
+# +++ Version 2021 - "mcversion" == the window title of minecraft game window
+#                                   See notes in script below needs changing 
+
+# +++ Version 1.2 - sanity check is minecraft running?
+# +++ Version 1.1 - added instructions
+# +++ Version 1.0 - Adapted script by Dihmz, toggle added with output
+
+# -- Instructions:
+
+# -- Install 'xdotool': just use your distribution's package manager to install it.
+
+# -$ sudo apt install xdotool
+# -$ mkdir ~/bin   (make bin dir)
+# save script ~/bin/AFKtoggle (nano,vim,etc)
+# -$ cd ~/bin 
+# -$ chmod +x AFKtoggle
+# -$ nano ~/.bashrc (edit bash profile to add /bin to global path)
+#    add at the end: export PATH="/home/YOURUSERNAME/bin:$PATH" 
+# -$ source ~/.bashrc  (reloads bash profile)
+
+# -- Disable autopause:
+# open the options.txt file in the Minecraft installation folder (it's usually /home/USER/.minecraft/options.txt)
+# look for the line with pauseOnLostFocus and replace true with false
+
+# -- Launch Minecraft
+# go in front of your fish farm, equip your fishing rod and aim carefully for the sweet spot
+# Alt-Tab out of Minecraft without pausing the game
+
+# -- open terminal
+# -$ AFKtoggle  <-- turns on/off
+
+
+#Initialize Variables
+
+
+# aka: Window Title
+# "mcversion" == the window title of minecraft game window
+
+    # change below to suit your game version window title, see notes below
+
+mcversion="Minecraft 1.16.5 - Singleplayer" # <-- aka: window title (as mentioned needs updating to your needs)
+
+#                    ^ ^^ ^   ^^^^^^^^^^^^     
+#example: "Minecraft 1.16.5 - Multiplayer" <-----Multiplayer 
+#         "Minecraft 1.16.5 - Singleplayer" <---- Singleplayer
+#         "Minecraft 1.14.4"
+# ------------------------------------------------------------------------------------------------------------         
+
+#get window id
+windowinfo="0"
+WindowID="1"
+IDreal="2"
+
+# set colours for terminal output
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+BRED='\033[0;91m'
+GREEN='\033[0;92m'
+YELLOW='\033[0;93m'
+
+# ! -- Check the window title
+
+# ie: "Minecraft 1.16.5 - Singleplayer" [set "mcversion" above - aka: window title]
+read windowinfo <<< $( echo $(xwininfo -name "$mcversion" ))
+
+# sanity check is minecraft running?
+#[[ ! -z "$windowinfo" ]] && echo "Not empty" || echo "Empty"
+
+if [[ -z "$windowinfo" ]];
+then
+# Not running, warn & exit          
+      clear
+      echo -e "\n${YELLOW}Start ${mcversion} First!${NC}"
+            echo -e "\n${RED}Did you set the correct mcversion?${NC} ${GREEN}<-- see notes in script${NC}\n"
+      
+else
+
+# else continue grabbing the window ID in hex
+read WindowID <<< $( echo $windowinfo | awk -F ":" '{print $3;}' )
+read IDreal <<< $( echo $WindowID | awk -F " " '{print $1;}' )
+
+# Great, now we have the windowID in hex
+
+#The Final command to run the code
+TOGGLE=$HOME/.AFKtoggle
+
+if [ ! -e $TOGGLE ]; then
+
+# create file as flag as state (TRUE)
+    touch $TOGGLE
+
+# Start AFK Mode
+$( xdotool mousedown --window $IDreal 3 )
+
+# display "AFK engaged" 
+clear
+echo -e "\n${YELLOW}AFK${NC} (Right click)${GREEN} Engaged${NC}\n "
+
+else
+
+# remove file as flag as state (FALSE)
+    rm $TOGGLE
+
+
+# Stop AFK Mode
+$( xdotool mouseup --window $IDreal 3 )
+
+# display "AFK mode stopped." 
+clear
+echo -e "\n${YELLOW}AFK${NC} (Right click)${RED} Disabled${NC}\n "
+
+fi
+fi 
